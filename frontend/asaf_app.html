@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASAF — Smart Antenatal Care</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  :root{
+    --bg:#FBF6EC;
+    --surface:#FFFFFF;
+    --ink:#2B2A28;
+    --ink-soft:#6E6A5F;
+    --line:#E6DDC8;
+    --primary:#1F4D3E;
+    --primary-soft:#E4EEE9;
+    --accent:#E2A33B;
+    --accent-soft:#FBEDD3;
+    --rose:#BE5347;
+    --rose-soft:#F7E3DF;
+    --sage:#5E8F6E;
+    --sage-soft:#E4EFE6;
+    --amber:#C98A2A;
+    --amber-soft:#FBEDD3;
+    --radius:14px;
+    --shadow: 0 6px 24px rgba(43,42,40,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Source Sans 3', system-ui, sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{ font-family:'Fraunces', Georgia, serif; margin:0; letter-spacing:-0.01em; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{ color:var(--primary); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+
+  /* ---------- Top nav ---------- */
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px; background:var(--surface); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:50;
+  }
+  .nav-brand{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .brand-mark{
+    width:32px; height:32px; border-radius:8px; background:var(--primary);
+    display:flex; align-items:center; justify-content:center; color:var(--accent-soft);
+    font-family:'Fraunces',serif; font-weight:700; font-size:16px;
+  }
+  .nav-brand h2{ font-size:18px; color:var(--ink); }
+  .nav-links{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .nav-link{
+    font-size:13px; font-weight:600; color:var(--ink-soft); padding:8px 12px;
+    border-radius:8px; cursor:pointer; text-decoration:none; white-space:nowrap;
+  }
+  .nav-link:hover{ background:var(--primary-soft); color:var(--primary); }
+  .nav-link.active{ background:var(--primary-soft); color:var(--primary); }
+  .nav-link.cta{ background:var(--primary); color:#fff; }
+  .nav-link.cta:hover{ filter:brightness(0.95); color:#fff; }
+
+  /* ---------- Page layout ---------- */
+  .page{ max-width:1100px; margin:0 auto; padding:36px 24px 64px; }
+  .page-narrow{ max-width:520px; margin:0 auto; padding:48px 24px 64px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--accent); font-weight:500;
+  }
+  .hero h1{ font-size:40px; color:var(--primary); margin-top:6px; line-height:1.15; }
+  .hero p.lede{ font-size:16px; color:var(--ink-soft); max-width:60ch; line-height:1.65; margin-top:14px; }
+  .hero-actions{ display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:32px; }
+  @media (max-width: 800px){ .grid-3{ grid-template-columns:1fr; } }
+
+  .module-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .module-card h3{ font-size:16px; color:var(--primary); margin-bottom:6px; }
+  .module-card .tag{
+    display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    background:var(--primary-soft); color:var(--primary); border-radius:6px;
+    padding:3px 8px; margin-bottom:10px; letter-spacing:0.04em;
+  }
+  .module-card p{ font-size:13.5px; line-height:1.6; color:var(--ink-soft); margin:0; }
+
+  /* ---------- Forms ---------- */
+  .auth-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:32px; box-shadow:var(--shadow);
+  }
+  .auth-card h2{ font-size:22px; color:var(--primary); margin-bottom:6px; }
+  .auth-card .sub{ font-size:13px; color:var(--ink-soft); margin-bottom:20px; }
+  label{ font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px; font-weight:600; }
+  input, select, textarea{
+    width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:8px;
+    font-size:14px; font-family:inherit; background:#fff; color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--primary); outline-offset:1px; }
+  .field{ margin-bottom:14px; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .role-toggle{ display:flex; gap:8px; margin-bottom:14px; }
+  .role-toggle button{
+    flex:1; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    font-family:inherit; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer;
+  }
+  .role-toggle button.active{ border-color:var(--primary); background:var(--primary-soft); color:var(--primary); }
+
+  .btn{
+    border:none; border-radius:8px; padding:11px 18px; font-size:14px; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:filter 0.15s ease;
+  }
+  .btn:hover{ filter:brightness(0.95); }
+  .btn-primary{ background:var(--primary); color:#fff; }
+  .btn-secondary{ background:var(--primary-soft); color:var(--primary); }
+  .btn-accent{ background:var(--accent); color:#3a2a06; }
+  .btn-danger{ background:var(--rose-soft); color:var(--rose); }
+  .btn:disabled{ opacity:0.45; cursor:not-allowed; }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+
+  .error-box{
+    background:var(--rose-soft); color:var(--rose); border-radius:8px; padding:10px 12px;
+    font-size:13px; margin-bottom:14px;
+  }
+  .success-box{
+    background:var(--sage-soft); color:var(--sage); border-radius:8px; padding:10px 12px;
+    font-size:13px; margin-bottom:14px;
+  }
+
+  /* ---------- Tables (admin) ---------- */
+  .data-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .data-table th{
+    text-align:left; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft);
+    border-bottom:1px solid var(--line); padding:8px 10px;
+  }
+  .data-table td{ padding:9px 10px; border-bottom:1px solid var(--line); }
+  .data-table tr:hover td{ background:var(--primary-soft); }
+
+  .tabs{ display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:20px; }
+  .tab{
+    padding:10px 16px; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab.active{ color:var(--primary); border-bottom-color:var(--primary); }
+
+  .stat-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; text-align:center;
+  }
+  .stat-card .num{ font-family:'Fraunces',serif; font-size:30px; color:var(--primary); font-weight:700; }
+  .stat-card .label{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+
+  .pill{
+    display:inline-block; font-size:11px; font-weight:700; border-radius:20px;
+    padding:3px 10px; font-family:'IBM Plex Mono', monospace; letter-spacing:0.03em;
+  }
+  .pill-low{ background:var(--sage-soft); color:var(--sage); }
+  .pill-mid{ background:var(--amber-soft); color:var(--amber); }
+  .pill-high{ background:var(--rose-soft); color:var(--rose); }
+  .pill-synced{ background:var(--sage-soft); color:var(--sage); }
+  .pill-pending{ background:var(--amber-soft); color:var(--amber); }
+  .pill-conflict{ background:var(--rose-soft); color:var(--rose); }
+  .pill-admin{ background:var(--rose-soft); color:var(--rose); }
+  .pill-administration{ background:var(--primary-soft); color:var(--primary); }
+  .pill-patient{ background:var(--accent-soft); color:var(--amber); }
+
+  /* ---------- Phone-frame app (administration / patient dashboard) ---------- */
+  .app-layout{
+    display:grid; grid-template-columns: minmax(280px,1fr) 400px; gap:32px;
+    max-width:1100px; margin:0 auto; padding:32px 24px 64px;
+  }
+  @media (max-width: 880px){ .app-layout{ grid-template-columns: 1fr; } }
+  .phone-shell{
+    background:var(--surface); border:1px solid var(--line); border-radius:28px;
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; height:720px;
+  }
+  .connectivity-strip{
+    height:36px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 16px; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    letter-spacing:0.06em; color:#fff; cursor:pointer; user-select:none;
+    transition:background 0.3s ease;
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.08) 0 6px, transparent 6px 12px);
+  }
+  .connectivity-strip.online{ background-color:var(--primary); }
+  .connectivity-strip.offline{ background-color:var(--rose); }
+  .conn-dot{
+    width:8px; height:8px; border-radius:50%; background:#fff; display:inline-block; margin-right:8px;
+    animation: pulse 1.6s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+  .phone-header{
+    padding:14px 18px 10px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .phone-body{ flex:1; overflow-y:auto; padding:16px 18px 8px; }
+  .phone-nav{ display:flex; border-top:1px solid var(--line); background:var(--surface); }
+  .phone-nav button{
+    flex:1; border:none; background:none; padding:12px 4px 10px; cursor:pointer;
+    font-family:'Source Sans 3', sans-serif; font-size:11px; color:var(--ink-soft);
+    border-top:2px solid transparent;
+  }
+  .phone-nav button.active{ color:var(--primary); border-top-color:var(--primary); font-weight:600; }
+
+  .screen-title{ font-size:18px; color:var(--primary); margin-bottom:4px; }
+  .screen-sub{ font-size:13px; color:var(--ink-soft); margin-bottom:16px; }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px; margin-bottom:12px;
+  }
+  .row{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .bar-track{ height:8px; border-radius:5px; background:var(--line); overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:5px; transition:width 0.5s ease; }
+  .empty{ text-align:center; color:var(--ink-soft); font-size:13px; padding:24px 10px; }
+  .icon-btn{
+    width:26px; height:26px; border-radius:50%; border:1px solid var(--line);
+    background:#fff; color:var(--rose); font-size:15px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-family:inherit; padding:0;
+  }
+  .icon-btn:hover{ background:var(--rose-soft); border-color:var(--rose); }
+  .toast{
+    position:absolute; left:18px; right:18px; bottom:74px; background:var(--ink); color:#fff;
+    border-radius:10px; padding:10px 14px; font-size:13px; box-shadow:var(--shadow);
+    animation: fadeUp 0.25s ease; z-index:5;
+  }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+
+  .footer-note{ margin-top:24px; font-size:12px; color:var(--ink-soft); line-height:1.6; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+// =====================================================================
+// On-device fallback model
+// Decision Tree (max_depth=14) distilled from the server-side Random Forest.
+// Used by the field-companion app when offline, so a risk check can still
+// run without contacting the backend.
+// Input order: [Age, SystolicBP, DiastolicBP, BS, BodyTemp, HeartRate]
+// Output: [P(high risk), P(low risk), P(mid risk)]  (alphabetical label order)
+// =====================================================================
+function dtScore(input) {
+    var var0;
+    if (input[3] <= 7.950000047683716) {
+        if (input[1] <= 132.5) {
+            if (input[1] <= 129.5) {
+                if (input[4] <= 99.5) {
+                    if (input[3] <= 7.005000114440918) {
+                        if (input[2] <= 49.5) {
+                            var0 = [0.0, 1.0, 0.0];
+                        } else {
+                            if (input[0] <= 19.5) {
+                                if (input[0] <= 15.5) {
+                                    if (input[0] <= 13.5) {
+                                        if (input[3] <= 6.8500001430511475) {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        } else {
+                                            if (input[5] <= 67.5) {
+                                                if (input[2] <= 77.5) {
+                                                    var0 = [0.0, 0.25, 0.75];
+                                                } else {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                }
+                                            } else {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            }
+                                        }
+                                    } else {
+                                        if (input[2] <= 55.0) {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    }
+                                } else {
+                                    if (input[3] <= 6.75) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[4] <= 98.20000076293945) {
+                                            if (input[5] <= 63.0) {
+                                                if (input[3] <= 6.8500001430511475) {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                } else {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                }
+                                            } else {
+                                                if (input[3] <= 6.8500001430511475) {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                } else {
+                                                    if (input[0] <= 17.0) {
+                                                        var0 = [0.0, 0.0, 1.0];
+                                                    } else {
+                                                        if (input[5] <= 73.0) {
+                                                            var0 = [0.0, 0.16666666666666666, 0.8333333333333334];
+                                                        } else {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (input[0] <= 27.5) {
+                                    if (input[3] <= 6.75) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[3] <= 6.950000047683716) {
+                                            if (input[1] <= 87.5) {
+                                                var0 = [0.0, 0.0, 1.0];
+                                            } else {
+                                                if (input[2] <= 77.5) {
+                                                    if (input[1] <= 94.5) {
+                                                        if (input[5] <= 71.0) {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        } else {
+                                                            var0 = [0.0, 0.4, 0.6];
+                                                        }
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                } else {
+                                                    if (input[5] <= 68.0) {
+                                                        var0 = [0.0, 0.0, 1.0];
+                                                    } else {
+                                                        if (input[2] <= 82.5) {
+                                                            var0 = [0.0, 0.4, 0.6];
+                                                        } else {
+                                                            var0 = [0.2, 0.8, 0.0];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    }
+                                } else {
+                                    if (input[0] <= 33.5) {
+                                        if (input[3] <= 6.8500001430511475) {
+                                            if (input[2] <= 85.0) {
+                                                if (input[1] <= 95.0) {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                } else {
+                                                    if (input[5] <= 78.0) {
+                                                        if (input[3] <= 6.450000047683716) {
+                                                            var0 = [0.0, 0.47058823529411764, 0.5294117647058824];
+                                                        } else {
+                                                            var0 = [0.0, 0.0, 1.0];
+                                                        }
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                }
+                                            } else {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            }
+                                        } else {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        }
+                                    } else {
+                                        if (input[5] <= 76.5) {
+                                            if (input[2] <= 85.0) {
+                                                if (input[0] <= 50.5) {
+                                                    if (input[0] <= 46.0) {
+                                                        if (input[3] <= 6.8500001430511475) {
+                                                            var0 = [0.0, 0.7, 0.3];
+                                                        } else {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        }
+                                                    } else {
+                                                        var0 = [0.0, 0.0, 1.0];
+                                                    }
+                                                } else {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                }
+                                            } else {
+                                                if (input[5] <= 68.0) {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                } else {
+                                                    if (input[2] <= 92.5) {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    } else {
+                                                        var0 = [1.0, 0.0, 0.0];
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            if (input[3] <= 6.8500001430511475) {
+                                                var0 = [0.0, 0.0, 1.0];
+                                            } else {
+                                                if (input[0] <= 38.0) {
+                                                    if (input[0] <= 34.5) {
+                                                        var0 = [1.0, 0.0, 0.0];
+                                                    } else {
+                                                        if (input[2] <= 85.0) {
+                                                            var0 = [0.25, 0.25, 0.5];
+                                                        } else {
+                                                            var0 = [0.0, 0.0, 1.0];
+                                                        }
+                                                    }
+                                                } else {
+                                                    if (input[1] <= 100.0) {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    } else {
+                                                        if (input[5] <= 78.5) {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        } else {
+                                                            var0 = [0.5, 0.5, 0.0];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (input[1] <= 95.0) {
+                            if (input[5] <= 81.0) {
+                                var0 = [0.0, 1.0, 0.0];
+                            } else {
+                                if (input[3] <= 7.349999904632568) {
+                                    var0 = [0.0, 1.0, 0.0];
+                                } else {
+                                    var0 = [0.0, 0.5, 0.5];
+                                }
+                            }
+                        } else {
+                            if (input[3] <= 7.75) {
+                                if (input[0] <= 23.5) {
+                                    if (input[3] <= 7.349999904632568) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[1] <= 110.0) {
+                                            if (input[0] <= 18.0) {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            } else {
+                                                if (input[2] <= 75.0) {
+                                                    var0 = [0.0, 0.3333333333333333, 0.6666666666666666];
+                                                } else {
+                                                    if (input[2] <= 87.5) {
+                                                        var0 = [0.0, 0.5, 0.5];
+                                                    } else {
+                                                        var0 = [0.0, 0.5, 0.5];
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            if (input[5] <= 76.5) {
+                                                if (input[0] <= 17.0) {
+                                                    if (input[3] <= 7.599999904632568) {
+                                                        var0 = [0.0, 0.6, 0.4];
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                } else {
+                                                    if (input[0] <= 22.0) {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    } else {
+                                                        if (input[2] <= 85.0) {
+                                                            var0 = [0.0, 0.75, 0.25];
+                                                        } else {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                if (input[2] <= 87.5) {
+                                                    if (input[2] <= 82.5) {
+                                                        var0 = [0.0, 0.6666666666666666, 0.3333333333333333];
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                } else {
+                                                    var0 = [0.0, 0.3333333333333333, 0.6666666666666666];
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    if (input[5] <= 72.5) {
+                                        if (input[2] <= 77.5) {
+                                            if (input[1] <= 110.0) {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            } else {
+                                                var0 = [1.0, 0.0, 0.0];
+                                            }
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    } else {
+                                        if (input[3] <= 7.349999904632568) {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        } else {
+                                            if (input[0] <= 37.0) {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            } else {
+                                                if (input[2] <= 87.5) {
+                                                    if (input[2] <= 82.5) {
+                                                        if (input[3] <= 7.599999904632568) {
+                                                            var0 = [0.0, 0.6666666666666666, 0.3333333333333333];
+                                                        } else {
+                                                            var0 = [0.0, 1.0, 0.0];
+                                                        }
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                } else {
+                                                    var0 = [0.0, 0.5, 0.5];
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (input[2] <= 82.5) {
+                                    if (input[0] <= 23.5) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[5] <= 75.0) {
+                                            if (input[0] <= 27.5) {
+                                                if (input[3] <= 7.8500001430511475) {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                } else {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                }
+                                            } else {
+                                                if (input[0] <= 46.0) {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                } else {
+                                                    if (input[3] <= 7.8500001430511475) {
+                                                        var0 = [0.0, 0.0, 1.0];
+                                                    } else {
+                                                        var0 = [0.0, 1.0, 0.0];
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        }
+                                    }
+                                } else {
+                                    if (input[0] <= 27.5) {
+                                        if (input[0] <= 20.5) {
+                                            if (input[3] <= 7.8500001430511475) {
+                                                if (input[2] <= 90.0) {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                } else {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                }
+                                            } else {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            }
+                                        } else {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        }
+                                    } else {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (input[0] <= 17.5) {
+                        if (input[3] <= 7.25) {
+                            if (input[3] <= 6.5) {
+                                if (input[1] <= 92.5) {
+                                    var0 = [1.0, 0.0, 0.0];
+                                } else {
+                                    var0 = [0.0, 1.0, 0.0];
+                                }
+                            } else {
+                                if (input[3] <= 6.950000047683716) {
+                                    if (input[1] <= 100.0) {
+                                        var0 = [0.0, 0.0, 1.0];
+                                    } else {
+                                        if (input[4] <= 101.5) {
+                                            var0 = [1.0, 0.0, 0.0];
+                                        } else {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        }
+                                    }
+                                } else {
+                                    var0 = [1.0, 0.0, 0.0];
+                                }
+                            }
+                        } else {
+                            if (input[3] <= 7.599999904632568) {
+                                if (input[5] <= 68.5) {
+                                    if (input[5] <= 63.0) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[0] <= 14.5) {
+                                            var0 = [0.0, 0.5, 0.5];
+                                        } else {
+                                            var0 = [0.0, 0.5, 0.5];
+                                        }
+                                    }
+                                } else {
+                                    if (input[5] <= 78.0) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        if (input[4] <= 101.5) {
+                                            if (input[2] <= 62.5) {
+                                                var0 = [1.0, 0.0, 0.0];
+                                            } else {
+                                                var0 = [0.3333333333333333, 0.6666666666666666, 0.0];
+                                            }
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (input[4] <= 101.5) {
+                                    if (input[2] <= 62.5) {
+                                        var0 = [0.0, 1.0, 0.0];
+                                    } else {
+                                        var0 = [0.0, 0.0, 1.0];
+                                    }
+                                } else {
+                                    if (input[5] <= 76.5) {
+                                        var0 = [1.0, 0.0, 0.0];
+                                    } else {
+                                        if (input[3] <= 7.8500001430511475) {
+                                            var0 = [1.0, 0.0, 0.0];
+                                        } else {
+                                            var0 = [0.0, 1.0, 0.0];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (input[5] <= 64.0) {
+                            var0 = [1.0, 0.0, 0.0];
+                        } else {
+                            if (input[0] <= 60.0) {
+                                if (input[4] <= 102.5) {
+                                    if (input[3] <= 7.105000019073486) {
+                                        if (input[2] <= 77.5) {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        } else {
+                                            if (input[2] <= 85.0) {
+                                                if (input[3] <= 6.8500001430511475) {
+                                                    var0 = [0.0, 1.0, 0.0];
+                                                } else {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                }
+                                            } else {
+                                                var0 = [0.0, 0.0, 1.0];
+                                            }
+                                        }
+                                    } else {
+                                        if (input[5] <= 73.0) {
+                                            if (input[3] <= 7.349999904632568) {
+                                                var0 = [1.0, 0.0, 0.0];
+                                            } else {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            }
+                                        } else {
+                                            if (input[0] <= 29.0) {
+                                                var0 = [0.0, 0.0, 1.0];
+                                            } else {
+                                                if (input[3] <= 7.700000047683716) {
+                                                    var0 = [0.0, 0.0, 1.0];
+                                                } else {
+                                                    var0 = [1.0, 0.0, 0.0];
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    var0 = [0.0, 1.0, 0.0];
+                                }
+                            } else {
+                                var0 = [0.0, 1.0, 0.0];
+                            }
+                        }
+                    }
+                }
+            } else {
+                var0 = [0.0, 0.0, 1.0];
+            }
+        } else {
+            if (input[3] <= 6.75) {
+                var0 = [0.0, 0.0, 1.0];
+            } else {
+                var0 = [1.0, 0.0, 0.0];
+            }
+        }
+    } else {
+        if (input[1] <= 135.0) {
+            if (input[3] <= 9.5) {
+                if (input[0] <= 15.0) {
+                    var0 = [1.0, 0.0, 0.0];
+                } else {
+                    if (input[1] <= 84.0) {
+                        var0 = [1.0, 0.0, 0.0];
+                    } else {
+                        if (input[5] <= 83.0) {
+                            if (input[5] <= 79.0) {
+                                if (input[0] <= 28.5) {
+                                    if (input[4] <= 99.5) {
+                                        if (input[2] <= 80.0) {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        } else {
+                                            if (input[3] <= 8.5) {
+                                                var0 = [0.0, 1.0, 0.0];
+                                            } else {
+                                                var0 = [0.0, 0.0, 1.0];
+                                            }
+                                        }
+                                    } else {
+                                        var0 = [1.0, 0.0, 0.0];
+                                    }
+                                } else {
+                                    var0 = [0.0, 0.0, 1.0];
+                                }
+                            } else {
+                                var0 = [1.0, 0.0, 0.0];
+                            }
+                        } else {
+                            if (input[4] <= 101.5) {
+                                var0 = [0.0, 0.0, 1.0];
+                            } else {
+                                if (input[1] <= 87.5) {
+                                    var0 = [0.2857142857142857, 0.0, 0.7142857142857143];
+                                } else {
+                                    var0 = [0.0, 0.0, 1.0];
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (input[0] <= 41.0) {
+                    if (input[2] <= 92.5) {
+                        var0 = [1.0, 0.0, 0.0];
+                    } else {
+                        var0 = [0.75, 0.0, 0.25];
+                    }
+                } else {
+                    if (input[5] <= 84.0) {
+                        if (input[3] <= 12.5) {
+                            var0 = [0.0, 0.0, 1.0];
+                        } else {
+                            if (input[5] <= 78.0) {
+                                if (input[2] <= 87.5) {
+                                    if (input[1] <= 125.0) {
+                                        if (input[0] <= 58.0) {
+                                            var0 = [1.0, 0.0, 0.0];
+                                        } else {
+                                            var0 = [0.375, 0.0, 0.625];
+                                        }
+                                    } else {
+                                        if (input[0] <= 42.5) {
+                                            var0 = [0.3333333333333333, 0.0, 0.6666666666666666];
+                                        } else {
+                                            var0 = [0.0, 0.0, 1.0];
+                                        }
+                                    }
+                                } else {
+                                    if (input[3] <= 17.0) {
+                                        if (input[5] <= 75.5) {
+                                            var0 = [0.5714285714285714, 0.0, 0.42857142857142855];
+                                        } else {
+                                            var0 = [1.0, 0.0, 0.0];
+                                        }
+                                    } else {
+                                        var0 = [1.0, 0.0, 0.0];
+                                    }
+                                }
+                            } else {
+                                var0 = [0.0, 0.0, 1.0];
+                            }
+                        }
+                    } else {
+                        var0 = [0.5714285714285714, 0.19047619047619047, 0.23809523809523808];
+                    }
+                }
+            }
+        } else {
+            var0 = [1.0, 0.0, 0.0];
+        }
+    }
+    return var0;
+}
+
+
+// =====================================================================
+// Configuration
+// =====================================================================
+const API_BASE = window.ASAF_API_BASE || "http://127.0.0.1:8000";
+
+// =====================================================================
+// Constants
+// =====================================================================
+const RISK_LABELS = ["high risk", "low risk", "mid risk"];
+
+const RISK_INFO = {
+  "low risk": { pill: "pill-low", bar: "var(--sage)", recommendation: "Routine follow-up at the next scheduled antenatal visit." },
+  "mid risk": { pill: "pill-mid", bar: "var(--amber)", recommendation: "Increase monitoring frequency \u2014 recheck vitals within one week." },
+  "high risk": { pill: "pill-high", bar: "var(--rose)", recommendation: "Immediate referral to an RHC/THQ hospital for specialist evaluation." },
+};
+
+const FEATURE_ORDER = ["Age", "SystolicBP", "DiastolicBP", "BS", "BodyTemp", "HeartRate"];
+const FEATURE_LABELS = {
+  Age: "Age (years)", SystolicBP: "Systolic BP (mmHg)", DiastolicBP: "Diastolic BP (mmHg)",
+  BS: "Blood sugar (mmol/L)", BodyTemp: "Body temperature (\u00b0F)", HeartRate: "Heart rate (bpm)",
+};
+const DEFAULT_VITALS = { Age: 27, SystolicBP: 110, DiastolicBP: 75, BS: 7.5, BodyTemp: 98.4, HeartRate: 76 };
+
+// Mean values for the "low risk" class & feature importances (for on-device explanation)
+const LOW_RISK_MEANS = { Age: 26.87, SystolicBP: 105.87, DiastolicBP: 72.53, BS: 7.22, BodyTemp: 98.37, HeartRate: 72.77 };
+const FEATURE_RANGE = { Age: [10, 70], SystolicBP: [70, 160], DiastolicBP: [49, 100], BS: [6, 19], BodyTemp: [98, 103], HeartRate: [7, 90] };
+const FEATURE_IMPORTANCE = { BS: 0.3516, SystolicBP: 0.1926, Age: 0.1589, DiastolicBP: 0.1270, HeartRate: 0.1030, BodyTemp: 0.0669 };
+
+const HEALTH_TIPS = {
+  1: "First trimester: take your folic acid tablet every day, avoid heavy lifting, and tell your LHW right away about severe nausea or any bleeding.",
+  2: "Second trimester: attend your scheduled check-up so your blood pressure and weight can be monitored, and eat more iron-rich foods such as lentils and leafy greens.",
+  3: "Third trimester: rest often, count your baby's movements every day, and plan how you will reach the health facility before your due date.",
+};
+
+// =====================================================================
+// Helpers
+// =====================================================================
+function runOnDeviceModel(values) {
+  const input = FEATURE_ORDER.map((k) => Number(values[k]));
+  const probs = dtScore(input); // [high, low, mid]
+  let maxIdx = 0;
+  for (let i = 1; i < probs.length; i++) if (probs[i] > probs[maxIdx]) maxIdx = i;
+  const label = RISK_LABELS[maxIdx];
+  const probMap = { "high risk": probs[0], "low risk": probs[1], "mid risk": probs[2] };
+
+  const factors = FEATURE_ORDER.map((k) => {
+    const range = FEATURE_RANGE[k][1] - FEATURE_RANGE[k][0];
+    const dev = Math.abs(values[k] - LOW_RISK_MEANS[k]) / range;
+    const direction = values[k] > LOW_RISK_MEANS[k] ? "higher" : "lower";
+    return { key: k, score: dev * FEATURE_IMPORTANCE[k], value: values[k], mean: LOW_RISK_MEANS[k], direction };
+  }).sort((a, b) => b.score - a.score).slice(0, 3);
+
+  return { label, probs: probMap, factors };
+}
+
+function calcEDD(lmpDateStr) {
+  const lmp = new Date(lmpDateStr + "T00:00:00");
+  const edd = new Date(lmp);
+  edd.setDate(edd.getDate() + 280);
+  const today = new Date();
+  const gestDays = Math.floor((today - lmp) / (1000 * 60 * 60 * 24));
+  const gestWeeks = Math.max(0, Math.floor(gestDays / 7));
+  let trimester = 1;
+  if (gestWeeks >= 28) trimester = 3;
+  else if (gestWeeks >= 14) trimester = 2;
+  return { edd, gestWeeks, trimester };
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+function fmtDateTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) + " " +
+         d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+function fmtTime(d) {
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+function uid(prefix) {
+  return prefix + "-" + Math.random().toString(36).slice(2, 8);
+}
+
+// =====================================================================
+// API client
+// =====================================================================
+const Api = {
+  token: null,
+
+  setToken(t) {
+    this.token = t;
+    if (t) localStorage.setItem("asaf_token", t);
+    else localStorage.removeItem("asaf_token");
+  },
+
+  loadToken() {
+    this.token = localStorage.getItem("asaf_token");
+    return this.token;
+  },
+
+  async request(path, { method = "GET", body, form } = {}) {
+    const headers = {};
+    if (this.token) headers["Authorization"] = "Bearer " + this.token;
+
+    let payload;
+    if (form) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      payload = new URLSearchParams(form).toString();
+    } else if (body !== undefined) {
+      headers["Content-Type"] = "application/json";
+      payload = JSON.stringify(body);
+    }
+
+    const res = await fetch(API_BASE + path, { method, headers, body: payload });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        const j = await res.json();
+        detail = j.detail || JSON.stringify(j);
+      } catch (e) {}
+      throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  },
+
+  health() { return this.request("/api/health"); },
+  login(username, password) { return this.request("/api/login", { method: "POST", form: { username, password } }); },
+  register(data) { return this.request("/api/register", { method: "POST", body: data }); },
+  me() { return this.request("/api/me"); },
+  updateMe(data) { return this.request("/api/me", { method: "PATCH", body: data }); },
+
+  patients() { return this.request("/api/patients"); },
+  createPatient(data) { return this.request("/api/patients", { method: "POST", body: data }); },
+  updatePatient(id, data) { return this.request("/api/patients/" + id, { method: "PATCH", body: data }); },
+  deletePatient(id) { return this.request("/api/patients/" + id, { method: "DELETE" }); },
+  patientExams(id) { return this.request("/api/patients/" + id + "/examinations"); },
+
+  myPatient() { return this.request("/api/patients/me"); },
+  updateMyPatient(data) { return this.request("/api/patients/me", { method: "PATCH", body: data }); },
+  myExams() { return this.request("/api/patients/me/examinations"); },
+
+  predict(vitals) { return this.request("/api/predict", { method: "POST", body: vitals }); },
+  createExam(data) { return this.request("/api/examinations", { method: "POST", body: data }); },
+  sync(items) { return this.request("/api/sync", { method: "POST", body: items }); },
+
+  adminUsers() { return this.request("/api/admin/users"); },
+  adminCreateUser(data) { return this.request("/api/admin/users", { method: "POST", body: data }); },
+  adminDeleteUser(id) { return this.request("/api/admin/users/" + id, { method: "DELETE" }); },
+  adminResetPassword(id, new_password) { return this.request("/api/admin/users/" + id + "/reset_password", { method: "POST", body: { new_password } }); },
+  adminData() { return this.request("/api/admin/data"); },
+  adminLogs() { return this.request("/api/admin/logs?limit=100"); },
+  adminSettings() { return this.request("/api/admin/settings"); },
+  adminUpdateSettings(settings) { return this.request("/api/admin/settings", { method: "PUT", body: { settings } }); },
+};
+
+// =====================================================================
+// Hash-based router hook
+// =====================================================================
+function useHashRoute() {
+  const [route, setRoute] = React.useState(window.location.hash.replace("#", "") || "/home");
+  React.useEffect(() => {
+    const onChange = () => setRoute(window.location.hash.replace("#", "") || "/home");
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
+  return route;
+}
+function navigate(path) {
+  window.location.hash = path;
+}
+
+
+// =====================================================================
+// Home page
+// =====================================================================
+function HomePage({ user }) {
+  return (
+    <div className="page">
+      <div className="hero">
+        <div className="eyebrow">ASAF · Smart Antenatal Care</div>
+        <h1>An AI-enhanced, offline-first<br/>antenatal care platform</h1>
+        <p className="lede">
+          ASAF helps Lady Health Workers, Medical Officers, and District Health Officers manage
+          expectant mothers in their care, run AI-assisted risk checks even without an internet
+          connection, and gives patients their own companion app with reminders and health tips
+          — all backed by a shared, secure account system.
+        </p>
+        <div className="hero-actions">
+          {user ? (
+            <button className="btn btn-primary" onClick={() => navigate(user.role === "admin" ? "/admin" : "/app")}>
+              Go to {user.role === "admin" ? "admin dashboard" : "dashboard"}
+            </button>
+          ) : (
+            <React.Fragment>
+              <button className="btn btn-primary" onClick={() => navigate("/register")}>Create an account</button>
+              <button className="btn btn-secondary" onClick={() => navigate("/login")}>Sign in</button>
+            </React.Fragment>
+          )}
+          <button className="btn btn-secondary" onClick={() => navigate("/about")}>Learn more</button>
+        </div>
+      </div>
+
+      <div className="grid-3">
+        <div className="module-card">
+          <h3>AI Risk Prediction</h3>
+          <p>A Random Forest model trained on real maternal health data (86.2% accuracy) flags
+            low, medium, and high-risk pregnancies from routine vitals like blood pressure
+            and blood sugar.</p>
+        </div>
+        <div className="module-card">
+          <h3>Offline-First Sync</h3>
+          <p>Field staff can register patients and run risk checks without connectivity. Records
+            queue locally and sync automatically once back online, with conflicts resolved
+            sensibly.</p>
+        </div>
+        <div className="module-card">
+          <h3>Patient Companion</h3>
+          <p>Expectant mothers get their own account with visit reminders, trimester health tips,
+            and an SMS fallback preview for patients without smartphones.</p>
+        </div>
+      </div>
+
+      <div className="footer-note">
+        Server-side data is stored per account in a shared database, so health-worker accounts
+        only see the patients they manage, while the admin account can view and manage all
+        accounts and data.
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// About page
+// =====================================================================
+function AboutPage() {
+  return (
+    <div className="page">
+      <div className="eyebrow">About ASAF</div>
+      <h1 style={{ marginTop: "6px" }}>What is ASAF?</h1>
+      <p className="lede" style={{ marginTop: "14px" }}>
+        ASAF (Smart Antenatal Care Framework) is a web application that helps community health
+        teams keep track of expectant mothers, run quick AI-assisted health risk checks, and
+        keep patients informed throughout their pregnancy. It's built for rural and
+        resource-constrained settings where internet connectivity can be unreliable, so it keeps
+        working offline and catches up automatically once a connection is available.
+      </p>
+      <p className="lede" style={{ marginTop: "14px" }}>
+        At its core, ASAF combines a simple patient register, a risk-assessment tool powered by
+        a machine-learning model, and a lightweight companion experience for patients
+        themselves — with an administrator able to oversee every account and record in the
+        system.
+      </p>
+
+      <h2 style={{ marginTop: "32px", fontSize: "20px", color: "var(--primary)" }}>What it does</h2>
+      <div className="grid-3">
+        <div className="module-card">
+          <h3>Patient records</h3>
+          <p>Health workers register patients with their age, village, and last menstrual
+            period, which is used to automatically calculate the expected due date and current
+            trimester.</p>
+        </div>
+        <div className="module-card">
+          <h3>Risk checks</h3>
+          <p>Enter a patient's vitals (age, blood pressure, blood sugar, temperature, heart
+            rate) and get an instant risk level — low, medium, or high — along with the
+            factors driving that result and a recommended next step.</p>
+        </div>
+        <div className="module-card">
+          <h3>Works offline</h3>
+          <p>If connectivity drops, new patients and risk checks are saved on the device and
+            queued for sync. Risk checks fall back to an on-device model so care isn't
+            interrupted.</p>
+        </div>
+      </div>
+
+      <h2 style={{ marginTop: "32px", fontSize: "20px", color: "var(--primary)" }}>How accounts work</h2>
+      <div className="grid-3">
+        <div className="module-card">
+          <span className="tag">Administration</span>
+          <h3>Health workers</h3>
+          <p>Lady Health Workers, Medical Officers, and District Officers register as
+            "Administration" accounts. Each one manages their own list of patients, runs
+            AI risk checks, and uses the offline sync queue.</p>
+        </div>
+        <div className="module-card">
+          <span className="tag">Patient</span>
+          <h3>Expectant mothers</h3>
+          <p>Patients get their own account showing their pregnancy timeline, trimester
+            health guidance, and visit reminders from their health worker.</p>
+        </div>
+        <div className="module-card">
+          <span className="tag">Admin</span>
+          <h3>System oversight</h3>
+          <p>A single seeded admin account can create or remove any account, view all
+            patient data across the system, and review a log of important activity.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// Login page
+// =====================================================================
+function LoginPage({ onAuth }) {
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError(""); setLoading(true);
+    try {
+      const resp = await Api.login(username, password);
+      Api.setToken(resp.access_token);
+      onAuth(resp.user);
+      navigate(resp.user.role === "admin" ? "/admin" : "/app");
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="page-narrow">
+      <div className="auth-card">
+        <h2>Sign in</h2>
+        <div className="sub">Enter your ASAF account credentials.</div>
+        {error && <div className="error-box">{error}</div>}
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Username</label>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} required autoFocus />
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+          <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+            {loading ? "Signing in\u2026" : "Sign in"}
+          </button>
+        </form>
+        <p style={{ fontSize: "13px", color: "var(--ink-soft)", marginTop: "16px" }}>
+          Don't have an account? <a href="#/register">Register</a>
+        </p>
+        <div className="footer-note">
+          Demo accounts — admin: <span className="mono">admin / admin123</span> ·
+          health worker: <span className="mono">lhw1 / lhw123</span> ·
+          patient: <span className="mono">razia / patient123</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// Register page
+// =====================================================================
+function RegisterPage({ onAuth }) {
+  const [role, setRole] = React.useState("administration");
+  const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [fullName, setFullName] = React.useState("");
+  const [title, setTitle] = React.useState("Lady Health Worker");
+  const [age, setAge] = React.useState("25");
+  const [lmp, setLmp] = React.useState("");
+  const [village, setVillage] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError(""); setLoading(true);
+    try {
+      const data = { username, password, full_name: fullName, role, email };
+      if (role === "administration") {
+        data.title = title;
+      } else {
+        data.title = "Patient";
+        data.age = Number(age);
+        data.lmp = lmp;
+        data.village = village;
+      }
+      const resp = await Api.register(data);
+      Api.setToken(resp.access_token);
+      onAuth(resp.user);
+      navigate("/app");
+    } catch (err) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="page-narrow">
+      <div className="auth-card">
+        <h2>Create an account</h2>
+        <div className="sub">Choose the account type that matches your role.</div>
+        {error && <div className="error-box">{error}</div>}
+
+        <div className="role-toggle">
+          <button type="button" className={role === "administration" ? "active" : ""} onClick={() => setRole("administration")}>
+            Health worker
+          </button>
+          <button type="button" className={role === "patient" ? "active" : ""} onClick={() => setRole("patient")}>
+            Patient
+          </button>
+        </div>
+
+        <form onSubmit={submit}>
+          <div className="grid-2">
+            <div className="field">
+              <label>Username</label>
+              <input value={username} onChange={(e) => setUsername(e.target.value)} required />
+            </div>
+            <div className="field">
+              <label>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={4} />
+            </div>
+          </div>
+          <div className="field">
+            <label>Full name</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Email{role === "patient" ? "" : " (optional)"}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={role === "patient"} placeholder="name@example.com" />
+            {role === "patient" && (
+              <p style={{ fontSize: "11px", color: "var(--ink-soft)", marginTop: "4px" }}>
+                Each email can only be used for one account.
+              </p>
+            )}
+          </div>
+
+          {role === "administration" ? (
+            <div className="field">
+              <label>Title</label>
+              <select value={title} onChange={(e) => setTitle(e.target.value)}>
+                <option>Lady Health Worker</option>
+                <option>Medical Officer</option>
+                <option>District Officer Health</option>
+              </select>
+            </div>
+          ) : (
+            <React.Fragment>
+              <div className="grid-2">
+                <div className="field">
+                  <label>Age</label>
+                  <input type="number" value={age} onChange={(e) => setAge(e.target.value)} required />
+                </div>
+                <div className="field">
+                  <label>Village</label>
+                  <input value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Optional" />
+                </div>
+              </div>
+              <div className="field">
+                <label>Last menstrual period (LMP)</label>
+                <input type="date" value={lmp} onChange={(e) => setLmp(e.target.value)} required />
+              </div>
+            </React.Fragment>
+          )}
+
+          <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+            {loading ? "Creating account\u2026" : "Create account"}
+          </button>
+        </form>
+        <p style={{ fontSize: "13px", color: "var(--ink-soft)", marginTop: "16px" }}>
+          Already have an account? <a href="#/login">Sign in</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
+// =====================================================================
+// Profile page
+// =====================================================================
+function ProfilePage({ user, onUserUpdate }) {
+  const [fullName, setFullName] = React.useState(user.full_name);
+  const [email, setEmail] = React.useState(user.email || "");
+  const [title, setTitle] = React.useState(user.title || "");
+  const [currentPassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError(""); setSuccess(""); setLoading(true);
+    try {
+      const body = { full_name: fullName, title, email };
+      if (newPassword) {
+        body.new_password = newPassword;
+        body.current_password = currentPassword;
+      }
+      const updated = await Api.updateMe(body);
+      onUserUpdate(updated);
+      setSuccess("Profile updated.");
+      setCurrentPassword(""); setNewPassword("");
+    } catch (err) {
+      setError(err.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="page-narrow">
+      <div className="auth-card">
+        <h2>Profile</h2>
+        <div className="sub">
+          <span className="mono">{user.username}</span> · <span className={"pill pill-" + user.role}>{user.role}</span>
+        </div>
+        {error && <div className="error-box">{error}</div>}
+        {success && <div className="success-box">{success}</div>}
+
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Full name</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Email{user.role === "patient" ? "" : " (optional)"}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={user.role === "patient"} placeholder="name@example.com" />
+          </div>
+          <div className="field">
+            <label>Title</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Lady Health Worker" />
+          </div>
+
+          <div className="field" style={{ marginTop: "20px", borderTop: "1px solid var(--line)", paddingTop: "16px" }}>
+            <label>Change password (optional)</label>
+          </div>
+          <div className="grid-2">
+            <div className="field">
+              <label>Current password</label>
+              <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>New password</label>
+              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+            {loading ? "Saving\u2026" : "Save changes"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// Settings page (per-account preferences)
+// =====================================================================
+function SettingsPage({ user, prefs, onPrefsChange }) {
+  function update(key, value) {
+    onPrefsChange({ ...prefs, [key]: value });
+  }
+
+  return (
+    <div className="page-narrow">
+      <div className="auth-card">
+        <h2>Settings</h2>
+        <div className="sub">Device preferences for this browser session.</div>
+
+        <div className="card" style={{ marginBottom: "12px" }}>
+          <div className="row">
+            <div>
+              <strong style={{ fontSize: "13px" }}>Start in offline mode</strong>
+              <div style={{ fontSize: "12px", color: "var(--ink-soft)" }}>
+                Simulate a poor-connectivity device by starting each dashboard session offline.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              style={{ width: "auto" }}
+              checked={prefs.startOffline}
+              onChange={(e) => update("startOffline", e.target.checked)}
+            />
+          </div>
+        </div>
+
+        {(user.role === "administration" || user.role === "admin") && (
+          <div className="card" style={{ marginBottom: "12px" }}>
+            <div className="row">
+              <div>
+                <strong style={{ fontSize: "13px" }}>Default risk model</strong>
+                <div style={{ fontSize: "12px", color: "var(--ink-soft)" }}>
+                  Choose whether risk checks use the server-side Random Forest (86.2% accuracy)
+                  or the on-device Decision Tree (83.7% accuracy, works offline).
+                </div>
+              </div>
+            </div>
+            <div className="role-toggle" style={{ marginTop: "10px", marginBottom: 0 }}>
+              <button type="button" className={prefs.defaultModel === "server" ? "active" : ""} onClick={() => update("defaultModel", "server")}>
+                Server (Random Forest)
+              </button>
+              <button type="button" className={prefs.defaultModel === "on-device" ? "active" : ""} onClick={() => update("defaultModel", "on-device")}>
+                On-device (Decision Tree)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {user.role === "patient" && (
+          <div className="card" style={{ marginBottom: "12px" }}>
+            <div className="row">
+              <div>
+                <strong style={{ fontSize: "13px" }}>SMS reminders</strong>
+                <div style={{ fontSize: "12px", color: "var(--ink-soft)" }}>
+                  Preview the SMS fallback message on the companion screen.
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                style={{ width: "auto" }}
+                checked={prefs.smsReminders}
+                onChange={(e) => update("smsReminders", e.target.checked)}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="footer-note">
+          These preferences are stored only in this browser (not synced to the server) and only
+          affect how the dashboard behaves on this device \u2014 they don't change any patient data.
+          Account details and password are managed on the <a href="#/profile">Profile</a> page.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// =====================================================================
+// Shared small components
+// =====================================================================
+function Toast({ message }) {
+  if (!message) return null;
+  return <div className="toast">{message}</div>;
+}
+
+function ConnectivityStrip({ isOnline, pendingCount, onToggle }) {
+  return (
+    <div className={"connectivity-strip " + (isOnline ? "online" : "offline")} onClick={onToggle} title="Click to simulate connectivity change">
+      <span><span className="conn-dot"></span>{isOnline ? "ONLINE" : "OFFLINE"}</span>
+      <span>{isOnline ? "Tap to simulate connectivity loss" : pendingCount + " record(s) queued · tap to reconnect"}</span>
+    </div>
+  );
+}
+
+// =====================================================================
+// Patients screen
+// =====================================================================
+function PatientsScreen({ patients, onAddPatient, onDeletePatient }) {
+  const [name, setName] = React.useState("");
+  const [age, setAge] = React.useState("");
+  const [lmp, setLmp] = React.useState("");
+  const [village, setVillage] = React.useState("");
+
+  function submit(e) {
+    e.preventDefault();
+    if (!name || !age || !lmp) return;
+    onAddPatient({ name, age: Number(age), lmp, village: village || "" });
+    setName(""); setAge(""); setLmp(""); setVillage("");
+  }
+
+  return (
+    <div className="phone-body">
+      <div className="screen-title">Your patients</div>
+      <div className="screen-sub">EDD and trimester computed automatically from LMP</div>
+
+      {patients.length === 0 && <div className="empty">No patients yet. Register your first patient below.</div>}
+
+      {patients.map((p) => {
+        const { edd, trimester, gestWeeks } = calcEDD(p.lmp);
+        return (
+          <div className="card" key={p.id}>
+            <div className="row">
+              <div>
+                <strong>{p.name}</strong>
+                <div style={{ fontSize: "12px", color: "var(--ink-soft)" }}>
+                  ID: <span className="mono">P-{p.id}</span> · {p.village || "—"} · Age {p.age}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className={"pill pill-" + p.sync_status}>{p.sync_status}</span>
+                <button className="icon-btn" title={"Remove " + p.name} onClick={() => onDeletePatient(p)}>×</button>
+              </div>
+            </div>
+            <div className="row" style={{ marginTop: "8px", fontSize: "13px" }}>
+              <span>EDD: <strong>{fmtDate(edd)}</strong></span>
+              <span>Trimester {trimester} ({gestWeeks} wks)</span>
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>Register new patient</strong>
+        <form onSubmit={submit} style={{ marginTop: "10px" }}>
+          <div className="field">
+            <label>Full name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Farzana Yousaf" />
+          </div>
+          <div className="grid-2">
+            <div className="field">
+              <label>Age</label>
+              <input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="28" />
+            </div>
+            <div className="field">
+              <label>Village</label>
+              <input value={village} onChange={(e) => setVillage(e.target.value)} placeholder="Optional" />
+            </div>
+          </div>
+          <div className="field">
+            <label>Last menstrual period (LMP)</label>
+            <input type="date" value={lmp} onChange={(e) => setLmp(e.target.value)} />
+          </div>
+          <button className="btn btn-primary btn-block" type="submit">Save registration</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// Examination & Risk screen
+// =====================================================================
+function ExamScreen({ patients, isOnline, defaultModel, onSaveExam }) {
+  const [patientId, setPatientId] = React.useState(patients[0] ? patients[0].id : "");
+  const [vitals, setVitals] = React.useState(DEFAULT_VITALS);
+  const [result, setResult] = React.useState(null);
+  const [modelUsed, setModelUsed] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  React.useEffect(() => {
+    const p = patients.find((x) => x.id === patientId);
+    if (p) {
+      setVitals((v) => ({ ...v, Age: p.age }));
+    } else if (patients.length > 0) {
+      setPatientId(patients[0].id);
+    }
+  }, [patientId, patients]);
+
+  function update(key, val) {
+    setVitals((v) => ({ ...v, [key]: val }));
+    setResult(null);
+  }
+
+  async function runAssessment() {
+    setError(""); setResult(null); setBusy(true);
+    try {
+      if (isOnline && defaultModel === "server") {
+        const r = await Api.predict(vitals);
+        setResult(r);
+        setModelUsed("server");
+      } else {
+        const r = runOnDeviceModel(vitals);
+        setResult(r);
+        setModelUsed("on-device");
+      }
+    } catch (err) {
+      setError(err.message || "Risk check failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function save() {
+    if (!result) return;
+    const patient = patients.find((x) => x.id === patientId);
+    onSaveExam(patient, vitals, result, modelUsed);
+    setResult(null);
+  }
+
+  const patient = patients.find((x) => x.id === patientId);
+
+  return (
+    <div className="phone-body">
+      <div className="screen-title">Trimester examination</div>
+      <div className="screen-sub">
+        {isOnline && defaultModel === "server"
+          ? "Server-side Random Forest model · 86.2% test accuracy"
+          : "On-device decision tree model · 83.7% test accuracy"}
+      </div>
+
+      <div className="field">
+        <label>Patient</label>
+        <select value={patientId} onChange={(e) => { setPatientId(Number(e.target.value)); setResult(null); }}>
+          {patients.map((p) => <option key={p.id} value={p.id}>{p.name} (P-{p.id})</option>)}
+        </select>
+      </div>
+
+      <div className="card">
+        <div className="grid-2">
+          {FEATURE_ORDER.map((k) => (
+            <div className="field" key={k}>
+              <label>{FEATURE_LABELS[k]}</label>
+              <input type="number" step="0.1" value={vitals[k]} onChange={(e) => update(k, Number(e.target.value))} />
+            </div>
+          ))}
+        </div>
+        <button className="btn btn-accent btn-block" onClick={runAssessment} disabled={busy || !patient}>
+          {busy ? "Running\u2026" : "Run risk assessment"}
+        </button>
+        {error && <div className="error-box" style={{ marginTop: "10px" }}>{error}</div>}
+      </div>
+
+      {result && (
+        <div className="card">
+          <div className="row">
+            <strong style={{ fontSize: "13px" }}>Predicted risk</strong>
+            <span className={"pill " + RISK_INFO[result.label].pill}>{result.label}</span>
+          </div>
+          <div style={{ fontSize: "11px", color: "var(--ink-soft)", marginTop: "4px" }}>
+            Model: {modelUsed === "server" ? "server-side Random Forest" : "on-device decision tree"}
+          </div>
+
+          <div style={{ marginTop: "10px" }}>
+            {RISK_LABELS.map((label) => (
+              <div key={label} style={{ marginBottom: "6px" }}>
+                <div className="row" style={{ fontSize: "11px", color: "var(--ink-soft)", marginBottom: "3px" }}>
+                  <span>{label}</span>
+                  <span>{(result.probs[label] * 100).toFixed(0)}%</span>
+                </div>
+                <div className="bar-track">
+                  <div className="bar-fill" style={{ width: (result.probs[label] * 100) + "%", background: RISK_INFO[label].bar }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: "10px", fontSize: "13px" }}>
+            <strong>Recommended action: </strong>{RISK_INFO[result.label].recommendation}
+          </div>
+
+          <div style={{ marginTop: "10px", fontSize: "12px", color: "var(--ink-soft)" }}>
+            <strong style={{ color: "var(--ink)" }}>Top contributing factors</strong>
+            <ul style={{ margin: "6px 0 0 18px", padding: 0 }}>
+              {result.factors.map((f) => (
+                <li key={f.key}>{FEATURE_LABELS[f.key]}: {f.value} ({f.direction} than the typical low-risk value of {f.mean})</li>
+              ))}
+            </ul>
+          </div>
+
+          <button className="btn btn-primary btn-block" style={{ marginTop: "12px" }} onClick={save}>
+            Save examination{patient ? " for " + patient.name : ""}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =====================================================================
+// Sync screen
+// =====================================================================
+function SyncScreen({ queue, log, isOnline, onSyncNow, onSimulateConflict, patients }) {
+  const pendingCount = queue.filter((q) => q.status === "pending").length;
+
+  return (
+    <div className="phone-body">
+      <div className="screen-title">Sync status</div>
+      <div className="screen-sub">Each record tracks a unique ID, last-updated time, and sync status</div>
+
+      <div className="card">
+        <div className="row">
+          <span>Pending records</span>
+          <span className="pill pill-pending">{pendingCount}</span>
+        </div>
+        <button className="btn btn-primary btn-block" style={{ marginTop: "10px" }} disabled={!isOnline || pendingCount === 0} onClick={onSyncNow}>
+          Sync now
+        </button>
+        <button className="btn btn-secondary btn-block" style={{ marginTop: "8px" }} disabled={patients.length === 0} onClick={onSimulateConflict}>
+          Simulate field conflict
+        </button>
+        <p style={{ fontSize: "11px", color: "var(--ink-soft)", marginTop: "8px" }}>
+          "Simulate field conflict" updates a patient's record on the server right now (as if
+          another device already synced an edit), then queues a different offline edit to the
+          same record with an earlier timestamp — so Sync Now demonstrates last-write-wins.
+        </p>
+      </div>
+
+      {queue.length === 0 && <div className="empty">No records queued yet. Go offline and register a patient or save an examination.</div>}
+
+      {queue.map((item) => (
+        <div className="card" key={item.client_id}>
+          <div className="row">
+            <div>
+              <strong style={{ fontSize: "13px" }}>{item.summary}</strong>
+              <div style={{ fontSize: "12px", color: "var(--ink-soft)" }}>
+                {item.patientName} · {fmtTime(item.client_ts)}
+              </div>
+            </div>
+            <span className={"pill pill-" + item.status}>{item.status}</span>
+          </div>
+        </div>
+      ))}
+
+      {log.length > 0 && (
+        <div className="card">
+          <strong style={{ fontSize: "13px" }}>Sync log</strong>
+          <div className="mono" style={{ fontSize: "11px", marginTop: "8px", lineHeight: "1.7", color: "var(--ink-soft)" }}>
+            {log.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =====================================================================
+// Companion screen
+// =====================================================================
+function CompanionScreen({ patient, smsReminders, onUpdate }) {
+  const [village, setVillage] = React.useState(patient.village || "");
+  const [saving, setSaving] = React.useState(false);
+
+  if (!patient) return <div className="phone-body"><div className="empty">No patient record found.</div></div>;
+  const { edd, trimester, gestWeeks } = calcEDD(patient.lmp);
+
+  async function saveVillage() {
+    setSaving(true);
+    try {
+      await onUpdate({ village });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="phone-body">
+      <div className="screen-title">Hello, {patient.name.split(" ")[0]}</div>
+      <div className="screen-sub">Trimester {trimester} · {gestWeeks} weeks · EDD {fmtDate(edd)}</div>
+
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>Your next visit</strong>
+        <p style={{ fontSize: "13px", marginTop: "6px" }}>
+          Your Lady Health Worker will visit you for your trimester {trimester} check-up.
+          Please have your health card ready.
+        </p>
+      </div>
+
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>Health tip for this trimester</strong>
+        <p style={{ fontSize: "13px", marginTop: "6px" }}>{HEALTH_TIPS[trimester]}</p>
+      </div>
+
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>Medicine schedule</strong>
+        <ul style={{ fontSize: "13px", margin: "6px 0 0 18px", padding: 0 }}>
+          <li>Folic acid — one tablet daily</li>
+          <li>Iron &amp; calcium — one tablet daily (from week 14)</li>
+          <li>Tetanus toxoid — as scheduled by your LHW</li>
+        </ul>
+      </div>
+
+      {smsReminders && (
+        <div className="card">
+          <strong style={{ fontSize: "13px" }}>SMS fallback preview</strong>
+          <div style={{ marginTop: "8px", background: "var(--primary-soft)", borderRadius: "10px", padding: "10px 12px", fontSize: "13px", fontFamily: "'IBM Plex Mono', monospace" }}>
+            ASAF Reminder: Hello {patient.name.split(" ")[0]}, your trimester {trimester} ANC visit
+            is due. Please be available at home for your LHW's visit. – BHU {patient.village || "your area"}
+          </div>
+          <p style={{ fontSize: "11px", color: "var(--ink-soft)", marginTop: "6px" }}>
+            Sent automatically to patients without a smartphone.
+          </p>
+        </div>
+      )}
+
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>My details</strong>
+        <div className="field" style={{ marginTop: "10px" }}>
+          <label>Village</label>
+          <input value={village} onChange={(e) => setVillage(e.target.value)} />
+        </div>
+        <button className="btn btn-secondary btn-block" onClick={saveVillage} disabled={saving}>
+          {saving ? "Saving\u2026" : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// =====================================================================
+// Admin dashboard
+// =====================================================================
+function AdminPage({ user }) {
+  const [tab, setTab] = React.useState("accounts");
+  const [users, setUsers] = React.useState([]);
+  const [data, setData] = React.useState(null);
+  const [logs, setLogs] = React.useState([]);
+  const [settings, setSettings] = React.useState({});
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
+
+  async function loadAll() {
+    setLoading(true); setError("");
+    try {
+      const [u, d, l, s] = await Promise.all([Api.adminUsers(), Api.adminData(), Api.adminLogs(), Api.adminSettings()]);
+      setUsers(u); setData(d); setLogs(l); setSettings(s.settings);
+    } catch (err) {
+      setError(err.message || "Failed to load admin data");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  React.useEffect(() => { loadAll(); }, []);
+
+  if (loading) return <div className="page"><div className="empty">Loading admin dashboard…</div></div>;
+
+  return (
+    <div className="page">
+      <div className="eyebrow">Admin · system oversight</div>
+      <h1 style={{ marginTop: "6px", fontSize: "28px" }}>System administration</h1>
+      {error && <div className="error-box" style={{ marginTop: "16px" }}>{error}</div>}
+
+      {data && (
+        <div className="grid-3" style={{ marginTop: "20px" }}>
+          <div className="stat-card"><div className="num">{data.user_count}</div><div className="label">Accounts</div></div>
+          <div className="stat-card"><div className="num">{data.patient_count}</div><div className="label">Patient records</div></div>
+          <div className="stat-card"><div className="num">{data.examination_count}</div><div className="label">Examinations logged</div></div>
+        </div>
+      )}
+
+      <div className="tabs" style={{ marginTop: "28px" }}>
+        <div className={"tab " + (tab === "accounts" ? "active" : "")} onClick={() => setTab("accounts")}>Accounts</div>
+        <div className={"tab " + (tab === "data" ? "active" : "")} onClick={() => setTab("data")}>All data</div>
+        <div className={"tab " + (tab === "system" ? "active" : "")} onClick={() => setTab("system")}>Settings &amp; logs</div>
+      </div>
+
+      {tab === "accounts" && <AccountsTab users={users} currentUser={user} onChange={loadAll} />}
+      {tab === "data" && data && <DataTab patients={data.patients} />}
+      {tab === "system" && <SystemTab settings={settings} logs={logs} onChange={loadAll} />}
+    </div>
+  );
+}
+
+function AccountsTab({ users, currentUser, onChange }) {
+  const [showCreate, setShowCreate] = React.useState(false);
+  const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [fullName, setFullName] = React.useState("");
+  const [role, setRole] = React.useState("administration");
+  const [title, setTitle] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [resetTarget, setResetTarget] = React.useState(null);
+  const [resetPassword, setResetPassword] = React.useState("");
+
+  async function createUser(e) {
+    e.preventDefault();
+    setError("");
+    try {
+      await Api.adminCreateUser({ username, password, full_name: fullName, role, title, email });
+      setShowCreate(false);
+      setUsername(""); setEmail(""); setPassword(""); setFullName(""); setTitle("");
+      onChange();
+    } catch (err) {
+      setError(err.message || "Failed to create user");
+    }
+  }
+
+  async function deleteUser(u) {
+    if (!window.confirm("Delete account \"" + u.username + "\"? This also deletes their patient records.")) return;
+    try {
+      await Api.adminDeleteUser(u.id);
+      onChange();
+    } catch (err) {
+      setError(err.message || "Failed to delete user");
+    }
+  }
+
+  async function submitReset(e) {
+    e.preventDefault();
+    try {
+      await Api.adminResetPassword(resetTarget.id, resetPassword);
+      setResetTarget(null); setResetPassword("");
+    } catch (err) {
+      setError(err.message || "Failed to reset password");
+    }
+  }
+
+  return (
+    <div>
+      {error && <div className="error-box">{error}</div>}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(!showCreate)}>
+          {showCreate ? "Cancel" : "+ New account"}
+        </button>
+      </div>
+
+      {showCreate && (
+        <form onSubmit={createUser} className="card" style={{ marginBottom: "16px" }}>
+          <div className="grid-2">
+            <div className="field"><label>Username</label><input value={username} onChange={(e) => setUsername(e.target.value)} required /></div>
+            <div className="field"><label>Password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+          </div>
+          <div className="grid-2">
+            <div className="field"><label>Full name</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} required /></div>
+            <div className="field">
+              <label>Role</label>
+              <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="administration">Administration (health worker)</option>
+                <option value="patient">Patient</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid-2">
+            <div className="field">
+              <label>Email{role === "patient" ? "" : " (optional)"}</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={role === "patient"} placeholder="name@example.com" />
+            </div>
+            <div className="field"><label>Title</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Medical Officer" /></div>
+          </div>
+          <button className="btn btn-primary btn-block" type="submit">Create account</button>
+        </form>
+      )}
+
+      {resetTarget && (
+        <form onSubmit={submitReset} className="card" style={{ marginBottom: "16px" }}>
+          <strong style={{ fontSize: "13px" }}>Reset password for {resetTarget.username}</strong>
+          <div className="field" style={{ marginTop: "10px" }}>
+            <input type="password" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} placeholder="New password" required />
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button className="btn btn-primary" type="submit">Set password</button>
+            <button className="btn btn-secondary" type="button" onClick={() => setResetTarget(null)}>Cancel</button>
+          </div>
+        </form>
+      )}
+
+      <table className="data-table">
+        <thead>
+          <tr><th>Username</th><th>Email</th><th>Full name</th><th>Role</th><th>Title</th><th>Patients</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u.id}>
+              <td className="mono">{u.username}</td>
+              <td className="mono">{u.email || "\u2014"}</td>
+              <td>{u.full_name}</td>
+              <td><span className={"pill pill-" + u.role}>{u.role}</span></td>
+              <td>{u.title}</td>
+              <td>{u.patient_count}</td>
+              <td>{fmtDateTime(u.created_at)}</td>
+              <td style={{ whiteSpace: "nowrap" }}>
+                <button className="btn btn-secondary btn-sm" onClick={() => setResetTarget(u)} style={{ marginRight: "6px" }}>Reset PW</button>
+                {u.id !== currentUser.id && (
+                  <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}>Delete</button>
+                )}
+              </td>
+            </tr>
+
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function DataTab({ patients }) {
+  return (
+    <div>
+      <table className="data-table">
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Age</th><th>Village</th><th>LMP</th><th>Owner</th><th>Sync status</th><th>Updated</th></tr>
+        </thead>
+        <tbody>
+          {patients.map((p) => (
+            <tr key={p.id}>
+              <td className="mono">P-{p.id}</td>
+              <td>{p.name}</td>
+              <td>{p.age}</td>
+              <td>{p.village || "—"}</td>
+              <td className="mono">{p.lmp}</td>
+              <td>{p.owner_name || <span style={{ color: "var(--ink-soft)" }}>unassigned</span>}</td>
+              <td><span className={"pill pill-" + p.sync_status}>{p.sync_status}</span></td>
+              <td>{fmtDateTime(p.updated_at)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {patients.length === 0 && <div className="empty">No patient records yet.</div>}
+    </div>
+  );
+}
+
+function SystemTab({ settings, logs, onChange }) {
+  const [modelVersion, setModelVersion] = React.useState(settings.model_version || "");
+  const [maintenance, setMaintenance] = React.useState(settings.maintenance_mode === "true");
+  const [announcement, setAnnouncement] = React.useState(settings.announcement || "");
+  const [saved, setSaved] = React.useState(false);
+
+  async function save() {
+    await Api.adminUpdateSettings({
+      model_version: modelVersion,
+      maintenance_mode: maintenance ? "true" : "false",
+      announcement,
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    onChange();
+  }
+
+  return (
+    <div>
+      <div className="card">
+        <strong style={{ fontSize: "13px" }}>System settings</strong>
+        {saved && <div className="success-box" style={{ marginTop: "10px" }}>Settings saved.</div>}
+        <div className="field" style={{ marginTop: "10px" }}>
+          <label>Active model version</label>
+          <input value={modelVersion} onChange={(e) => setModelVersion(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Announcement banner</label>
+          <textarea rows={2} value={announcement} onChange={(e) => setAnnouncement(e.target.value)} />
+        </div>
+        <div className="row" style={{ marginBottom: "12px" }}>
+          <label style={{ marginBottom: 0 }}>Maintenance mode</label>
+          <input type="checkbox" style={{ width: "auto" }} checked={maintenance} onChange={(e) => setMaintenance(e.target.checked)} />
+        </div>
+        <button className="btn btn-primary" onClick={save}>Save settings</button>
+      </div>
+
+      <div className="card" style={{ marginTop: "16px" }}>
+        <strong style={{ fontSize: "13px" }}>Audit log</strong>
+        <table className="data-table" style={{ marginTop: "10px" }}>
+          <thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Details</th></tr></thead>
+          <tbody>
+            {logs.map((l) => (
+              <tr key={l.id}>
+                <td className="mono">{fmtDateTime(l.created_at)}</td>
+                <td className="mono">{l.username || "—"}</td>
+                <td>{l.role && <span className={"pill pill-" + l.role}>{l.role}</span>}</td>
+                <td>{l.action}</td>
+                <td style={{ fontSize: "12px", color: "var(--ink-soft)" }}>{l.details}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+
+// =====================================================================
+// Navbar
+// =====================================================================
+function Navbar({ user, route, onLogout }) {
+  function isActive(path) {
+    return route === path ? "nav-link active" : "nav-link";
+  }
+
+  return (
+    <div className="navbar">
+      <div className="nav-brand" onClick={() => navigate("/home")}>
+        <div className="brand-mark">A</div>
+        <h2>ASAF</h2>
+      </div>
+      <div className="nav-links">
+        <a className={isActive("/home")} href="#/home">Home</a>
+        <a className={isActive("/about")} href="#/about">About</a>
+        {user && (
+          <a className={isActive(user.role === "admin" ? "/admin" : "/app")} href={user.role === "admin" ? "#/admin" : "#/app"}>
+            {user.role === "admin" ? "Admin" : "Dashboard"}
+          </a>
+        )}
+        {user && <a className={isActive("/profile")} href="#/profile">Profile</a>}
+        {user && <a className={isActive("/settings")} href="#/settings">Settings</a>}
+        {!user && <a className="nav-link" href="#/login">Login</a>}
+        {!user && <a className="nav-link cta" href="#/register">Register</a>}
+        {user && (
+          <span className="nav-link" onClick={onLogout} style={{ marginLeft: "4px" }}>
+            Sign out ({user.username})
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// App dashboard (the phone-frame field app: patient management, AI risk
+// checks, and offline sync for administration accounts; companion view
+// for patient accounts)
+// =====================================================================
+function AppDashboard({ user, prefs }) {
+  const isAdministration = user.role === "administration" || user.role === "admin";
+
+  const [patients, setPatients] = React.useState([]);
+  const [myPatient, setMyPatient] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
+
+  const [isOnline, setIsOnline] = React.useState(!prefs.startOffline);
+  const [screen, setScreen] = React.useState(isAdministration ? "patients" : "companion");
+  const [queue, setQueue] = React.useState([]);
+  const [log, setLog] = React.useState([]);
+  const [toast, setToast] = React.useState("");
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2800);
+  }
+
+  async function refresh() {
+    try {
+      if (isAdministration) {
+        setPatients(await Api.patients());
+      } else {
+        setMyPatient(await Api.myPatient());
+      }
+    } catch (err) {
+      setError(err.message || "Failed to load data");
+    }
+  }
+
+  React.useEffect(() => {
+    refresh().finally(() => setLoading(false));
+  }, []);
+
+  // --- Patients (administration) ---
+  async function onAddPatient(data) {
+    if (isOnline) {
+      try {
+        await Api.createPatient(data);
+        await refresh();
+        showToast("Patient registered.");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      }
+    } else {
+      const client_id = uid("q");
+      setQueue((q) => [...q, {
+        client_id, type: "patient_create", payload: data,
+        client_ts: new Date(), status: "pending",
+        summary: "New patient registration", patientName: data.name,
+      }]);
+      setPatients((p) => [...p, {
+        id: "pending-" + client_id, name: data.name, age: data.age, lmp: data.lmp,
+        village: data.village, sync_status: "pending",
+        updated_at: new Date().toISOString(), created_at: new Date().toISOString(),
+      }]);
+      showToast("Saved offline — will sync when back online.");
+    }
+  }
+
+  async function onDeletePatient(p) {
+    if (typeof p.id === "string") {
+      // a still-pending offline record
+      setPatients((list) => list.filter((x) => x.id !== p.id));
+      setQueue((q) => q.filter((item) => !(item.type === "patient_create" && item.payload.name === p.name)));
+      return;
+    }
+    if (!isOnline) {
+      showToast("Connect to the network to remove a saved patient.");
+      return;
+    }
+    if (!window.confirm("Remove " + p.name + "?")) return;
+    try {
+      await Api.deletePatient(p.id);
+      await refresh();
+    } catch (err) {
+      showToast("Error: " + err.message);
+    }
+  }
+
+  // --- Examinations (administration) ---
+  async function onSaveExam(patient, vitals, result, modelUsed) {
+    if (!patient) return;
+    if (isOnline && typeof patient.id === "number") {
+      try {
+        await Api.createExam({
+          patient_id: patient.id, vitals,
+          model_used: modelUsed, risk_label: result.label, probs: result.probs,
+        });
+        showToast("Examination saved for " + patient.name + " (" + result.label + ").");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      }
+    } else {
+      const client_id = uid("q");
+      setQueue((q) => [...q, {
+        client_id, type: "examination_create",
+        payload: { patient_id: patient.id, vitals, risk_label: result.label, probs: result.probs, model_used: modelUsed },
+        client_ts: new Date(), status: "pending",
+        summary: "Examination result: " + result.label, patientName: patient.name,
+      }]);
+      showToast("Examination saved offline — will sync when back online.");
+    }
+  }
+
+  // --- Sync ---
+  async function onSyncNow() {
+    const pending = queue.filter((q) => q.status === "pending");
+    if (pending.length === 0) return;
+    try {
+      const resp = await Api.sync(pending.map((p) => ({
+        client_id: p.client_id, type: p.type, payload: p.payload, client_ts: p.client_ts.toISOString(),
+      })));
+      const byId = {};
+      resp.results.forEach((r) => { byId[r.client_id] = r; });
+      setQueue((q) => q.map((item) => byId[item.client_id] ? { ...item, status: byId[item.client_id].status } : item));
+      setLog((l) => [
+        ...resp.results.map((r) => "[" + new Date().toLocaleTimeString() + "] " + r.client_id + ": " + r.detail),
+        ...l,
+      ]);
+      await refresh();
+      const synced = resp.results.filter((r) => r.status === "synced").length;
+      const conflicts = resp.results.filter((r) => r.status === "conflict").length;
+      showToast("Synced " + synced + " record(s)" + (conflicts ? ", " + conflicts + " conflict(s) flagged." : "."));
+    } catch (err) {
+      showToast("Sync error: " + err.message);
+    }
+  }
+
+  async function onSimulateConflict() {
+    const target = patients.find((p) => typeof p.id === "number");
+    if (!target) { showToast("No synced patient to use for this demo."); return; }
+    try {
+      // 1. Simulate "another device already synced" by updating the server now.
+      await Api.updatePatient(target.id, { village: (target.village || "Village") + " (district office)" });
+      await refresh();
+      // 2. Queue an offline edit timestamped 10 minutes ago for the same record.
+      const oldTs = new Date(Date.now() - 10 * 60 * 1000);
+      setQueue((q) => [...q, {
+        client_id: uid("q"), type: "patient_update",
+        payload: { patient_id: target.id, village: (target.village || "Village") + " (field note)" },
+        client_ts: oldTs, status: "pending",
+        summary: "Edit village name (offline, 10 min ago)", patientName: target.name,
+      }]);
+      showToast("Conflict scenario ready for " + target.name + " — press Sync now.");
+    } catch (err) {
+      showToast("Error: " + err.message);
+    }
+  }
+
+  // --- Companion (patient) ---
+  async function onCompanionUpdate(data) {
+    const updated = await Api.updateMyPatient(data);
+    setMyPatient(updated);
+    showToast("Saved.");
+  }
+
+  function toggleOnline() {
+    setIsOnline((v) => {
+      if (!v) showToast("Back online — use Sync now to upload queued records.");
+      return !v;
+    });
+  }
+
+  if (loading) return <div className="page"><div className="empty">Loading your dashboard…</div></div>;
+  if (error) return <div className="page"><div className="error-box">{error}</div></div>;
+
+  const navItems = isAdministration
+    ? [["patients", "Patients"], ["exam", "Risk check"], ["sync", "Sync"]]
+    : [["companion", "Companion"]];
+
+  return (
+    <div className="app-layout">
+      <div>
+        <div className="eyebrow">{user.role === "admin" ? "Admin (field-app view)" : (isAdministration ? "Administration" : "Patient")}</div>
+        <h1 style={{ marginTop: "6px", fontSize: "28px" }}>Hello, {user.full_name.split(" ")[0]}</h1>
+        <p className="lede" style={{ marginTop: "10px" }}>
+          {isAdministration
+            ? "This is the field-worker app: manage your own patients, run AI risk checks, and review the offline sync queue. Your patient list is private to your account — other health workers can't see it, but the admin account can."
+            : "This is your companion app: pregnancy timeline, health tips for your current trimester, and reminders from your health worker."}
+        </p>
+        <div className="card" style={{ marginTop: "24px" }}>
+          <strong style={{ fontSize: "13px" }}>{user.title}</strong>
+          <div style={{ fontSize: "12px", color: "var(--ink-soft)", marginTop: "4px" }}>
+            Username: <span className="mono">{user.username}</span> · Role: <span className={"pill pill-" + user.role}>{user.role}</span>
+          </div>
+        </div>
+        {isAdministration && (
+          <div className="footer-note">
+            Risk model in use: {isOnline && prefs.defaultModel === "server" ? "server-side Random Forest" : "on-device decision tree"}.
+            Change this in <a href="#/settings">Settings</a>.
+          </div>
+        )}
+      </div>
+
+      <div className="phone-shell" style={{ position: "relative" }}>
+        <ConnectivityStrip isOnline={isOnline} pendingCount={queue.filter((q) => q.status === "pending").length} onToggle={toggleOnline} />
+        <div className="phone-header">
+          <strong style={{ fontSize: "13px" }}>ASAF Field App</strong>
+          <span className="mono" style={{ fontSize: "11px", color: "var(--ink-soft)" }}>{user.username}</span>
+        </div>
+
+        {screen === "patients" && <PatientsScreen patients={patients} onAddPatient={onAddPatient} onDeletePatient={onDeletePatient} />}
+        {screen === "exam" && <ExamScreen patients={patients.filter((p) => typeof p.id === "number")} isOnline={isOnline} defaultModel={prefs.defaultModel} onSaveExam={onSaveExam} />}
+        {screen === "sync" && <SyncScreen queue={queue} log={log} isOnline={isOnline} onSyncNow={onSyncNow} onSimulateConflict={onSimulateConflict} patients={patients} />}
+        {screen === "companion" && myPatient && <CompanionScreen patient={myPatient} smsReminders={prefs.smsReminders} onUpdate={onCompanionUpdate} />}
+
+        <Toast message={toast} />
+
+        <div className="phone-nav">
+          {navItems.map(([key, label]) => (
+            <button key={key} className={screen === key ? "active" : ""} onClick={() => setScreen(key)}>{label}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================================
+// Root App
+// =====================================================================
+function App() {
+  const route = useHashRoute();
+  const [user, setUser] = React.useState(null);
+  const [booting, setBooting] = React.useState(true);
+  const [prefs, setPrefs] = React.useState({ startOffline: false, defaultModel: "server", smsReminders: false });
+
+  React.useEffect(() => {
+    const token = Api.loadToken();
+    if (!token) { setBooting(false); return; }
+    Api.me().then(setUser).catch(() => Api.setToken(null)).finally(() => setBooting(false));
+  }, []);
+
+  function onLogout() {
+    Api.setToken(null);
+    setUser(null);
+    navigate("/home");
+  }
+
+  // route guards
+  React.useEffect(() => {
+    if (booting) return;
+    const authedOnly = ["/profile", "/settings", "/app", "/admin"];
+    if (authedOnly.includes(route) && !user) navigate("/login");
+    if (route === "/admin" && user && user.role !== "admin") navigate("/app");
+    if ((route === "/login" || route === "/register") && user) navigate(user.role === "admin" ? "/admin" : "/app");
+  }, [route, user, booting]);
+
+  if (booting) return <div className="page"><div className="empty">Loading ASAF…</div></div>;
+
+  let content;
+  switch (route) {
+    case "/home": content = <HomePage user={user} />; break;
+    case "/about": content = <AboutPage />; break;
+    case "/login": content = <LoginPage onAuth={setUser} />; break;
+    case "/register": content = <RegisterPage onAuth={setUser} />; break;
+    case "/profile": content = user ? <ProfilePage user={user} onUserUpdate={setUser} /> : null; break;
+    case "/settings": content = user ? <SettingsPage user={user} prefs={prefs} onPrefsChange={setPrefs} /> : null; break;
+    case "/app": content = user ? <AppDashboard user={user} prefs={prefs} /> : null; break;
+    case "/admin": content = user && user.role === "admin" ? <AdminPage user={user} /> : null; break;
+    default: content = <HomePage user={user} />;
+  }
+
+  return (
+    <React.Fragment>
+      <Navbar user={user} route={route} onLogout={onLogout} />
+      {content}
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+
+</script>
+</body>
+</html>
