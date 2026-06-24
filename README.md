@@ -6,7 +6,7 @@ research project. It has two parts:
 - **`backend/`** — a FastAPI + SQLite REST API: accounts, authentication (JWT),
   per-user patient records, AI risk prediction (the trained Random Forest from the
   notebook), offline-sync endpoint, and admin endpoints.
-- **`frontend/asaf_app.html`** — a single-file React app (no build step) with
+- **`frontend/index.html`** — a single-file React app (no build step) with
   Home, About, Login, Register, Profile, Settings, a field-app dashboard, and an
   Admin dashboard. It talks to the backend over the REST API.
 
